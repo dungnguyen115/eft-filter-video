@@ -77,48 +77,51 @@ class EPlayerRenderer extends EFrameBufferObjectRenderer implements SurfaceTextu
 
     @Override
     public void onSurfaceCreated(final EGLConfig config) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        try {
+            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        final int[] args = new int[1];
+            final int[] args = new int[1];
 
-        GLES20.glGenTextures(args.length, args, 0);
-        texName = args[0];
-
-
-        previewTexture = new ESurfaceTexture(texName);
-        previewTexture.setOnFrameAvailableListener(this);
+            GLES20.glGenTextures(args.length, args, 0);
+            texName = args[0];
 
 
-        GLES20.glBindTexture(previewTexture.getTextureTarget(), texName);
-        // GL_TEXTURE_EXTERNAL_OES
-        EglUtil.setupSampler(previewTexture.getTextureTarget(), GL_LINEAR, GL_NEAREST);
-        GLES20.glBindTexture(GL_TEXTURE_2D, 0);
+            previewTexture = new ESurfaceTexture(texName);
+            previewTexture.setOnFrameAvailableListener(this);
 
-        filterFramebufferObject = new EFramebufferObject();
-        // GL_TEXTURE_EXTERNAL_OES
-        previewFilter = new GlPreviewFilter(previewTexture.getTextureTarget());
-        previewFilter.setup();
 
-        Surface surface = new Surface(previewTexture.getSurfaceTexture());
-        this.simpleExoPlayer.setVideoSurface(surface);
-        Log.d("Dungn", surface.toString());
+            GLES20.glBindTexture(previewTexture.getTextureTarget(), texName);
+            // GL_TEXTURE_EXTERNAL_OES
+            EglUtil.setupSampler(previewTexture.getTextureTarget(), GL_LINEAR, GL_NEAREST);
+            GLES20.glBindTexture(GL_TEXTURE_2D, 0);
 
-        Matrix.setLookAtM(VMatrix, 0,
-                0.0f, 0.0f, 5.0f,
-                0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f
-        );
+            filterFramebufferObject = new EFramebufferObject();
+            // GL_TEXTURE_EXTERNAL_OES
+            previewFilter = new GlPreviewFilter(previewTexture.getTextureTarget());
+            previewFilter.setup();
 
-        synchronized (this) {
-            updateSurface = false;
+            Surface surface = new Surface(previewTexture.getSurfaceTexture());
+            this.simpleExoPlayer.setVideoSurface(surface);
+            Log.d("Dungn", surface.toString());
+
+            Matrix.setLookAtM(VMatrix, 0,
+                    0.0f, 0.0f, 5.0f,
+                    0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f
+            );
+
+            synchronized (this) {
+                updateSurface = false;
+            }
+
+            if (glFilter != null) {
+                isNewFilter = true;
+            }
+
+            GLES20.glGetIntegerv(GL_MAX_TEXTURE_SIZE, args, 0);
+        } catch (Exception e) {
+            Log.d("Error Dungn: ", e.toString());
         }
-
-        if (glFilter != null) {
-            isNewFilter = true;
-        }
-
-        GLES20.glGetIntegerv(GL_MAX_TEXTURE_SIZE, args, 0);
-
     }
 
     @Override
